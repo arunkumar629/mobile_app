@@ -1,9 +1,13 @@
 import sqlite3
+import hashlib
+import os
 from datetime import datetime, timezone, timedelta
+from functools import wraps
 
-from flask import Flask, request, g
+from flask import Flask, request, g, redirect, url_for, session
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
 DATABASE = "greetings.db"
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -25,6 +29,13 @@ def close_db(exception):
 def init_db():
     db = sqlite3.connect(DATABASE)
     db.execute(
+        """CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL
+        )"""
+    )
+    db.execute(
         """CREATE TABLE IF NOT EXISTS greetings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
@@ -36,7 +47,209 @@ def init_db():
     db.close()
 
 
+def hash_password(password):
+    salt = os.urandom(16)
+    hashed = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 100000)
+    return salt.hex() + ":" + hashed.hex()
+
+
+def verify_password(stored, provided):
+    salt_hex, hash_hex = stored.split(":")
+    salt = bytes.fromhex(salt_hex)
+    hashed = hashlib.pbkdf2_hmac("sha256", provided.encode(), salt, 100000)
+    return hashed.hex() == hash_hex
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if "user_id" not in session:
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated
+
+
+# --- Auth Pages ---
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    error = ""
+    success = ""
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        confirm = request.form.get("confirm", "")
+        if not username or not password:
+            error = "Username and password are required."
+        elif password != confirm:
+            error = "Passwords do not match."
+        elif len(password) < 4:
+            error = "Password must be at least 4 characters."
+        else:
+            db = get_db()
+            existing = db.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()
+            if existing:
+                error = "Username already taken."
+            else:
+                db.execute(
+                    "INSERT INTO users (username, password) VALUES (?, ?)",
+                    (username, hash_password(password)),
+                )
+                db.commit()
+                success = "Registration successful! You can now log in."
+
+    alert_html = ""
+    if error:
+        alert_html = f'<div class="alert alert-danger">{error}</div>'
+    if success:
+        alert_html = f'<div class="alert alert-success">{success}</div>'
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Greeting App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {{
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }}
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-transparent">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">Greeting App</a>
+        </div>
+    </nav>
+
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-body p-5">
+                    <h2 class="text-center fw-bold mb-2">Register</h2>
+                    <p class="text-center text-muted mb-4">Create a new account</p>
+                    {alert_html}
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="username" class="form-label fw-semibold">Username</label>
+                            <input type="text" class="form-control form-control-lg" id="username" name="username"
+                                   placeholder="Choose a username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label fw-semibold">Password</label>
+                            <input type="password" class="form-control form-control-lg" id="password" name="password"
+                                   placeholder="Create a password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirm" class="form-label fw-semibold">Confirm Password</label>
+                            <input type="password" class="form-control form-control-lg" id="confirm" name="confirm"
+                                   placeholder="Confirm your password" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">Register</button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-4">
+                        Already have an account? <a href="/login" class="text-decoration-none">Login &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>"""
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error = ""
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        db = get_db()
+        user = db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+        if user and verify_password(user["password"], password):
+            session["user_id"] = user["id"]
+            session["username"] = user["username"]
+            return redirect(url_for("hello"))
+        else:
+            error = "Invalid username or password."
+
+    alert_html = ""
+    if error:
+        alert_html = f'<div class="alert alert-danger">{error}</div>'
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Greeting App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {{
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }}
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-transparent">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">Greeting App</a>
+        </div>
+    </nav>
+
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-body p-5">
+                    <h2 class="text-center fw-bold mb-2">Login</h2>
+                    <p class="text-center text-muted mb-4">Sign in to your account</p>
+                    {alert_html}
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="username" class="form-label fw-semibold">Username</label>
+                            <input type="text" class="form-control form-control-lg" id="username" name="username"
+                                   placeholder="Enter your username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label fw-semibold">Password</label>
+                            <input type="password" class="form-control form-control-lg" id="password" name="password"
+                                   placeholder="Enter your password" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">Login</button>
+                        </div>
+                    </form>
+                    <div class="text-center mt-4">
+                        Don't have an account? <a href="/register" class="text-decoration-none">Register &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>"""
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+
+# --- Protected Pages ---
+
 @app.route("/", methods=["GET", "POST"])
+@login_required
 def hello():
     name = ""
     current_date = ""
@@ -69,6 +282,8 @@ def hello():
             </div>
         </div>"""
 
+    username = session.get("username", "")
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -87,6 +302,10 @@ def hello():
     <nav class="navbar navbar-dark bg-transparent">
         <div class="container">
             <a class="navbar-brand fw-bold" href="/">Greeting App</a>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-white">Hi, {username}</span>
+                <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
+            </div>
         </div>
     </nav>
 
@@ -123,6 +342,7 @@ def hello():
 
 
 @app.route("/admin")
+@login_required
 def admin():
     db = get_db()
     rows = db.execute("SELECT id, name, date, time FROM greetings ORDER BY id DESC").fetchall()
@@ -143,6 +363,8 @@ def admin():
                 <td colspan="4" class="text-center text-muted py-4">No entries yet</td>
             </tr>"""
 
+    username = session.get("username", "")
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -161,7 +383,10 @@ def admin():
     <nav class="navbar navbar-dark bg-transparent">
         <div class="container">
             <a class="navbar-brand fw-bold" href="/">Greeting App</a>
-            <a href="/admin" class="btn btn-outline-light btn-sm">Admin Panel</a>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-white">Hi, {username}</span>
+                <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
+            </div>
         </div>
     </nav>
 
