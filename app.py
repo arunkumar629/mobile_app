@@ -40,7 +40,8 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             date TEXT NOT NULL,
-            time TEXT NOT NULL
+            time TEXT NOT NULL,
+            status TEXT NOT NULL
         )"""
     )
     db.commit()
@@ -251,27 +252,31 @@ def logout():
 @app.route("/", methods=["GET", "POST"])
 @login_required
 def hello():
-    name = ""
+    username = session.get("username", "")
+    status = ""
     current_date = ""
     current_time = ""
     if request.method == "POST":
-        name = request.form.get("name", "")
+        status = request.form.get("status", "")
         now_ist = datetime.now(IST)
         current_date = now_ist.strftime("%Y-%m-%d")
         current_time = now_ist.strftime("%I:%M:%S %p IST")
         db = get_db()
         db.execute(
-            "INSERT INTO greetings (name, date, time) VALUES (?, ?, ?)",
-            (name, current_date, current_time),
+            "INSERT INTO greetings (name, date, time, status) VALUES (?, ?, ?, ?)",
+            (username, current_date, current_time, status),
         )
         db.commit()
 
     result_html = ""
-    if name:
+    if status:
+        badge_class = "bg-success" if status == "In" else "bg-danger"
         result_html = f"""
         <div class="card border-0 shadow-sm mt-4">
             <div class="card-body text-center py-4">
-                <h4 class="card-title text-primary mb-3">Hello, <strong>{name}</strong>!</h4>
+                <h4 class="card-title mb-3">
+                    <span class="badge {badge_class} fs-5">{status}</span>
+                </h4>
                 <p class="text-muted mb-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock me-1" viewBox="0 0 16 16">
                         <path d="M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z"/>
@@ -281,8 +286,6 @@ def hello():
                 </p>
             </div>
         </div>"""
-
-    username = session.get("username", "")
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -313,20 +316,18 @@ def hello():
         <div class="col-md-6 col-lg-5">
             <div class="card border-0 shadow-lg rounded-4">
                 <div class="card-body p-5">
-                    <h2 class="text-center fw-bold mb-2">Welcome</h2>
-                    <p class="text-center text-muted mb-4">Enter your name to get a greeting with the current time</p>
-                    <form method="POST">
-                        <div class="mb-3">
-                            <label for="name" class="form-label fw-semibold">Your Name</label>
-                            <input type="text" class="form-control form-control-lg" id="name" name="name"
-                                   placeholder="e.g. John Doe" value="{name}" required>
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                Submit
-                            </button>
-                        </div>
-                    </form>
+                    <h2 class="text-center fw-bold mb-2">Welcome, {username}</h2>
+                    <p class="text-center text-muted mb-4">Mark your attendance with current time</p>
+                    <div class="d-flex gap-3">
+                        <form method="POST" class="flex-fill">
+                            <input type="hidden" name="status" value="In">
+                            <button type="submit" class="btn btn-success btn-lg w-100">In</button>
+                        </form>
+                        <form method="POST" class="flex-fill">
+                            <input type="hidden" name="status" value="Out">
+                            <button type="submit" class="btn btn-danger btn-lg w-100">Out</button>
+                        </form>
+                    </div>
                     {result_html}
                     <div class="text-center mt-4">
                         <a href="/admin" class="text-decoration-none">Go to Admin Panel &rarr;</a>
@@ -345,22 +346,24 @@ def hello():
 @login_required
 def admin():
     db = get_db()
-    rows = db.execute("SELECT id, name, date, time FROM greetings ORDER BY id DESC").fetchall()
+    rows = db.execute("SELECT id, name, date, time, status FROM greetings ORDER BY id DESC").fetchall()
 
     table_rows = ""
     for row in rows:
+        badge = '<span class="badge bg-success">In</span>' if row["status"] == "In" else '<span class="badge bg-danger">Out</span>'
         table_rows += f"""
             <tr>
                 <td>{row["id"]}</td>
                 <td>{row["name"]}</td>
                 <td>{row["date"]}</td>
                 <td>{row["time"]}</td>
+                <td>{badge}</td>
             </tr>"""
 
     if not rows:
         table_rows = """
             <tr>
-                <td colspan="4" class="text-center text-muted py-4">No entries yet</td>
+                <td colspan="5" class="text-center text-muted py-4">No entries yet</td>
             </tr>"""
 
     username = session.get("username", "")
@@ -405,6 +408,7 @@ def admin():
                                 <th>Name</th>
                                 <th>Date</th>
                                 <th>Time (IST)</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
