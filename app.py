@@ -87,7 +87,6 @@ def hello():
     <nav class="navbar navbar-dark bg-transparent">
         <div class="container">
             <a class="navbar-brand fw-bold" href="/">Greeting App</a>
-            <a href="/admin" class="btn btn-outline-light btn-sm">Admin Panel</a>
         </div>
     </nav>
 
@@ -110,6 +109,9 @@ def hello():
                         </div>
                     </form>
                     {result_html}
+                    <div class="text-center mt-4">
+                        <a href="/admin" class="text-decoration-none">Go to Admin Panel &rarr;</a>
+                    </div>
                 </div>
             </div>
         </div>
