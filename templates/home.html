@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+    <h1>hello welcome to ai</h1>
+    <p class="subtitle">Signed in as {{ user.name or user.email }}</p>
+
+    <div class="nav-link" style="margin-top: 24px;">
+        <a class="link" href="{{ url_for('logout') }}">Sign out</a>
+    </div>
+{% endblock %}
