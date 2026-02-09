@@ -13,66 +13,68 @@ def hello():
         name = request.form.get("name", "")
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+    result_html = ""
+    if name:
+        result_html = f"""
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-body text-center py-4">
+                <h4 class="card-title text-primary mb-3">Hello, <strong>{name}</strong>!</h4>
+                <p class="text-muted mb-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock me-1" viewBox="0 0 16 16">
+                        <path d="M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z"/>
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+                    </svg>
+                    {current_time}
+                </p>
+            </div>
+        </div>"""
+
     return f"""<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Greeting App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {{
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            margin: 0;
-            background: #f0f2f5;
-        }}
-        .container {{
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            text-align: center;
-        }}
-        h1 {{
-            color: #333;
-        }}
-        input[type="text"] {{
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 250px;
-        }}
-        button {{
-            padding: 10px 20px;
-            font-size: 16px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-left: 8px;
-        }}
-        button:hover {{
-            background: #0056b3;
-        }}
-        .result {{
-            margin-top: 1.5rem;
-            font-size: 18px;
-            color: #333;
         }}
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Greeting App</h1>
-        <form method="POST">
-            <input type="text" name="name" placeholder="Enter your name" value="{name}" required>
-            <button type="submit">Submit</button>
-        </form>
-        {"<div class='result'><p>Hello, <strong>" + name + "</strong>!</p><p>Current time: " + current_time + "</p></div>" if name else ""}
+    <nav class="navbar navbar-dark bg-transparent">
+        <div class="container">
+            <span class="navbar-brand fw-bold">Greeting App</span>
+        </div>
+    </nav>
+
+    <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-body p-5">
+                    <h2 class="text-center fw-bold mb-2">Welcome</h2>
+                    <p class="text-center text-muted mb-4">Enter your name to get a greeting with the current time</p>
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="name" class="form-label fw-semibold">Your Name</label>
+                            <input type="text" class="form-control form-control-lg" id="name" name="name"
+                                   placeholder="e.g. John Doe" value="{name}" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                Submit
+                            </button>
+                        </div>
+                    </form>
+                    {result_html}
+                </div>
+            </div>
+        </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>"""
 
