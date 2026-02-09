@@ -9,68 +9,29 @@ app.secret_key = os.urandom(24)
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "attendance.db")
 
-COMMON_STYLE = """
-    body {
-        font-family: Arial, sans-serif;
-        max-width: 700px;
-        margin: 40px auto;
-        padding: 0 20px;
-        background: #f5f5f5;
-    }
-    h2 { color: #333; }
-    .msg { color: red; margin-bottom: 10px; }
-    .success { color: green; margin-bottom: 10px; }
-    input[type=text], input[type=password] {
-        padding: 10px;
-        width: 100%;
-        margin: 6px 0 14px 0;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-sizing: border-box;
-    }
-    label { font-weight: bold; }
-    .btn {
-        padding: 12px 30px;
-        font-size: 1em;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        color: white;
-        margin-right: 10px;
-    }
-    .btn-primary { background: #007bff; }
-    .btn-primary:hover { background: #0069d9; }
-    .btn-success { background: #28a745; }
-    .btn-success:hover { background: #218838; }
-    .btn-danger { background: #dc3545; }
-    .btn-danger:hover { background: #c82333; }
-    .btn-secondary { background: #6c757d; }
-    .btn-secondary:hover { background: #5a6268; }
-    a { color: #007bff; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .nav { margin-bottom: 20px; }
-    .nav a { margin-right: 15px; }
-    .greeting {
-        font-size: 1.3em;
-        margin-bottom: 20px;
-        color: #444;
-    }
-    .buttons { margin: 20px 0; }
-    .buttons form { display: inline; }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        background: white;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    th, td {
-        padding: 10px 14px;
-        text-align: left;
-        border: 1px solid #ddd;
-    }
-    th { background: #343a40; color: white; }
-    tr:nth-child(even) { background: #f9f9f9; }
+BOOTSTRAP_HEAD = """
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<style>
+    body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+    .card { border: none; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+    .card-header { border-radius: 16px 16px 0 0 !important; }
+    .btn { border-radius: 10px; font-weight: 600; }
+    .table { margin-bottom: 0; }
+    .table thead th { border-bottom: 2px solid #dee2e6; }
+    .navbar { box-shadow: 0 2px 15px rgba(0,0,0,0.1); }
+    .punch-btn { padding: 16px 40px; font-size: 1.15rem; letter-spacing: 0.5px; transition: transform 0.15s; }
+    .punch-btn:hover { transform: translateY(-2px); }
+    .badge-punch-in { background: #d4edda; color: #155724; }
+    .badge-punch-out { background: #f8d7da; color: #721c24; }
+    .avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; color: #fff; }
+</style>
+"""
+
+BOOTSTRAP_SCRIPTS = """
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 """
 
 
@@ -100,7 +61,6 @@ def init_db():
             time TEXT NOT NULL
         )
     """)
-    # Create default admin if not exists
     admin = c.execute("SELECT id FROM users WHERE username = 'admin'").fetchone()
     if not admin:
         pw_hash = sha256("admin123".encode()).hexdigest()
@@ -112,7 +72,57 @@ def init_db():
     conn.close()
 
 
-# ─── Login ───
+def navbar_html(active="home"):
+    username = session.get("username", "")
+    is_admin = session.get("is_admin", 0)
+    initial = username[0].upper() if username else "?"
+    colors = ["#007bff", "#28a745", "#dc3545", "#fd7e14", "#6f42c1", "#e83e8c", "#20c997"]
+    color = colors[sum(ord(c) for c in username) % len(colors)]
+
+    admin_item = ""
+    if is_admin:
+        active_cls = "active" if active == "admin" else ""
+        admin_item = f"""
+        <li class="nav-item">
+            <a class="nav-link {active_cls}" href="/admin">
+                <i class="bi bi-shield-lock me-1"></i>Admin
+            </a>
+        </li>"""
+
+    home_active = "active" if active == "home" else ""
+
+    return f"""
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/home">
+                <i class="bi bi-clock-history me-2"></i>AttendanceApp
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {home_active}" href="/home">
+                            <i class="bi bi-house-door me-1"></i>Home
+                        </a>
+                    </li>
+                    {admin_item}
+                </ul>
+                <div class="d-flex align-items-center">
+                    <div class="avatar me-2" style="background:{color};">{initial}</div>
+                    <span class="text-light me-3 fw-semibold">{username}</span>
+                    <a href="/logout" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-box-arrow-right me-1"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    """
+
+
+# ─── Index ───
 
 @app.route("/", methods=["GET"])
 def index():
@@ -120,6 +130,8 @@ def index():
         return redirect(url_for("home"))
     return redirect(url_for("login"))
 
+
+# ─── Login ───
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -146,21 +158,71 @@ def login():
         else:
             msg = "Invalid username or password."
 
+    alert_html = ""
+    if msg:
+        alert_html = f"""
+        <div class="alert alert-danger d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>{msg}
+        </div>"""
+
     return f"""
     <!DOCTYPE html>
-    <html>
-    <head><title>Login</title><style>{COMMON_STYLE}</style></head>
+    <html lang="en">
+    <head>
+        <title>Login - AttendanceApp</title>
+        {BOOTSTRAP_HEAD}
+        <style>
+            .login-wrapper {{
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }}
+        </style>
+    </head>
     <body>
-        <h2>Login</h2>
-        <div class="msg">{msg}</div>
-        <form method="POST">
-            <label>Username</label>
-            <input type="text" name="username" required>
-            <label>Password</label>
-            <input type="password" name="password" required>
-            <button type="submit" class="btn btn-primary">Login</button>
-        </form>
-        <p>Don't have an account? <a href="{url_for('register')}">Register here</a></p>
+        <div class="login-wrapper">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-5 col-lg-4">
+                        <div class="text-center mb-4">
+                            <div class="bg-white d-inline-flex p-3 rounded-circle mb-3" style="box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+                                <i class="bi bi-clock-history text-primary" style="font-size:2.5rem;"></i>
+                            </div>
+                            <h2 class="text-white fw-bold">AttendanceApp</h2>
+                            <p class="text-white-50">Sign in to your account</p>
+                        </div>
+                        <div class="card">
+                            <div class="card-body p-4">
+                                {alert_html}
+                                <form method="POST">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">
+                                            <i class="bi bi-person me-1"></i>Username
+                                        </label>
+                                        <input type="text" name="username" class="form-control form-control-lg" placeholder="Enter your username" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label fw-semibold">
+                                            <i class="bi bi-lock me-1"></i>Password
+                                        </label>
+                                        <input type="password" name="password" class="form-control form-control-lg" placeholder="Enter your password" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                                    </button>
+                                </form>
+                                <div class="text-center">
+                                    <span class="text-muted">Don't have an account?</span>
+                                    <a href="{url_for('register')}" class="fw-semibold text-decoration-none"> Register here</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {BOOTSTRAP_SCRIPTS}
     </body>
     </html>
     """
@@ -196,22 +258,76 @@ def register():
             finally:
                 conn.close()
 
+    alert_html = ""
+    if msg:
+        alert_html = f"""
+        <div class="alert alert-danger d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>{msg}
+        </div>"""
+    if success:
+        alert_html = f"""
+        <div class="alert alert-success d-flex align-items-center" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>{success}
+        </div>"""
+
     return f"""
     <!DOCTYPE html>
-    <html>
-    <head><title>Register</title><style>{COMMON_STYLE}</style></head>
+    <html lang="en">
+    <head>
+        <title>Register - AttendanceApp</title>
+        {BOOTSTRAP_HEAD}
+        <style>
+            .register-wrapper {{
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }}
+        </style>
+    </head>
     <body>
-        <h2>Register</h2>
-        <div class="msg">{msg}</div>
-        <div class="success">{success}</div>
-        <form method="POST">
-            <label>Username</label>
-            <input type="text" name="username" required>
-            <label>Password</label>
-            <input type="password" name="password" required>
-            <button type="submit" class="btn btn-primary">Register</button>
-        </form>
-        <p>Already have an account? <a href="{url_for('login')}">Login here</a></p>
+        <div class="register-wrapper">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-5 col-lg-4">
+                        <div class="text-center mb-4">
+                            <div class="bg-white d-inline-flex p-3 rounded-circle mb-3" style="box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+                                <i class="bi bi-person-plus text-success" style="font-size:2.5rem;"></i>
+                            </div>
+                            <h2 class="text-white fw-bold">Create Account</h2>
+                            <p class="text-white-50">Join AttendanceApp today</p>
+                        </div>
+                        <div class="card">
+                            <div class="card-body p-4">
+                                {alert_html}
+                                <form method="POST">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">
+                                            <i class="bi bi-person me-1"></i>Username
+                                        </label>
+                                        <input type="text" name="username" class="form-control form-control-lg" placeholder="Choose a username" required>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label fw-semibold">
+                                            <i class="bi bi-lock me-1"></i>Password
+                                        </label>
+                                        <input type="password" name="password" class="form-control form-control-lg" placeholder="Choose a password" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-success btn-lg w-100 mb-3">
+                                        <i class="bi bi-person-plus me-2"></i>Register
+                                    </button>
+                                </form>
+                                <div class="text-center">
+                                    <span class="text-muted">Already have an account?</span>
+                                    <a href="{url_for('login')}" class="fw-semibold text-decoration-none"> Login here</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {BOOTSTRAP_SCRIPTS}
     </body>
     </html>
     """
@@ -233,7 +349,6 @@ def home():
         return redirect(url_for("login"))
 
     username = session["username"]
-    is_admin = session.get("is_admin", 0)
 
     conn = get_db()
     records = conn.execute(
@@ -243,51 +358,101 @@ def home():
     conn.close()
 
     rows_html = ""
-    for r in records:
-        rows_html += f"""
+    if records:
+        for idx, r in enumerate(records, 1):
+            badge_cls = "badge-punch-in" if r["action"] == "Punch In" else "badge-punch-out"
+            icon = "bi-box-arrow-in-right" if r["action"] == "Punch In" else "bi-box-arrow-right"
+            rows_html += f"""
+            <tr>
+                <td class="text-muted">{idx}</td>
+                <td><span class="fw-semibold">{r['name']}</span></td>
+                <td><span class="badge {badge_cls} px-3 py-2"><i class="bi {icon} me-1"></i>{r['action']}</span></td>
+                <td><i class="bi bi-calendar3 me-1 text-muted"></i>{r['date']}</td>
+                <td><i class="bi bi-clock me-1 text-muted"></i>{r['time']}</td>
+            </tr>"""
+    else:
+        rows_html = """
         <tr>
-            <td>{r['name']}</td>
-            <td>{r['action']}</td>
-            <td>{r['date']}</td>
-            <td>{r['time']}</td>
+            <td colspan="5" class="text-center text-muted py-4">
+                <i class="bi bi-inbox" style="font-size:2rem;"></i>
+                <p class="mb-0 mt-2">No attendance records yet. Punch in to get started!</p>
+            </td>
         </tr>"""
 
-    admin_link = ""
-    if is_admin:
-        admin_link = f'<a href="{url_for("admin")}">Admin Panel</a>'
+    today = datetime.now().strftime("%A, %B %d, %Y")
 
     return f"""
     <!DOCTYPE html>
-    <html>
-    <head><title>Attendance</title><style>{COMMON_STYLE}</style></head>
+    <html lang="en">
+    <head>
+        <title>Home - AttendanceApp</title>
+        {BOOTSTRAP_HEAD}
+        <style>body {{ background: #f0f2f5; }}</style>
+    </head>
     <body>
-        <div class="nav">
-            {admin_link}
-            <a href="{url_for('logout')}">Logout</a>
-        </div>
-        <h2>Attendance System</h2>
-        <div class="greeting">Hello {username}!</div>
+        {navbar_html("home")}
+        <div class="container">
+            <!-- Welcome Card -->
+            <div class="card mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body p-4 text-white">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="fw-bold mb-1">Hello {username}!</h3>
+                            <p class="mb-0 opacity-75"><i class="bi bi-calendar-event me-1"></i>{today}</p>
+                        </div>
+                        <div class="col-auto d-none d-md-block">
+                            <i class="bi bi-hand-wave" style="font-size:3rem; opacity:0.7;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <div class="buttons">
-            <form method="POST" action="{url_for('punch')}">
-                <input type="hidden" name="action" value="Punch In">
-                <button type="submit" class="btn btn-success">Punch In</button>
-            </form>
-            <form method="POST" action="{url_for('punch')}">
-                <input type="hidden" name="action" value="Punch Out">
-                <button type="submit" class="btn btn-danger">Punch Out</button>
-            </form>
-        </div>
+            <!-- Punch Buttons -->
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6">
+                    <form method="POST" action="{url_for('punch')}">
+                        <input type="hidden" name="action" value="Punch In">
+                        <button type="submit" class="btn btn-success punch-btn w-100 shadow-sm">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Punch In
+                        </button>
+                    </form>
+                </div>
+                <div class="col-sm-6">
+                    <form method="POST" action="{url_for('punch')}">
+                        <input type="hidden" name="action" value="Punch Out">
+                        <button type="submit" class="btn btn-danger punch-btn w-100 shadow-sm">
+                            <i class="bi bi-box-arrow-right me-2"></i>Punch Out
+                        </button>
+                    </form>
+                </div>
+            </div>
 
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Action</th>
-                <th>Date</th>
-                <th>Time</th>
-            </tr>
-            {rows_html}
-        </table>
+            <!-- Records Table -->
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-table me-2"></i>My Attendance Records</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Action</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {rows_html}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {BOOTSTRAP_SCRIPTS}
     </body>
     </html>
     """
@@ -338,56 +503,154 @@ def admin():
     # Users table
     users_html = ""
     for u in users:
-        role = "Admin" if u["is_admin"] else "User"
+        if u["is_admin"]:
+            role_badge = '<span class="badge bg-danger px-3 py-2"><i class="bi bi-shield-lock me-1"></i>Admin</span>'
+        else:
+            role_badge = '<span class="badge bg-primary px-3 py-2"><i class="bi bi-person me-1"></i>User</span>'
+        initial = u["username"][0].upper()
+        colors = ["#007bff", "#28a745", "#dc3545", "#fd7e14", "#6f42c1", "#e83e8c", "#20c997"]
+        color = colors[sum(ord(c) for c in u["username"]) % len(colors)]
         users_html += f"""
         <tr>
             <td>{u['id']}</td>
-            <td>{u['username']}</td>
-            <td>{role}</td>
+            <td>
+                <div class="d-flex align-items-center">
+                    <div class="avatar me-2" style="background:{color}; width:36px; height:36px; font-size:0.9rem;">{initial}</div>
+                    <span class="fw-semibold">{u['username']}</span>
+                </div>
+            </td>
+            <td>{role_badge}</td>
         </tr>"""
 
     # Attendance table
     rows_html = ""
-    for r in records:
-        rows_html += f"""
+    if records:
+        for idx, r in enumerate(records, 1):
+            badge_cls = "badge-punch-in" if r["action"] == "Punch In" else "badge-punch-out"
+            icon = "bi-box-arrow-in-right" if r["action"] == "Punch In" else "bi-box-arrow-right"
+            rows_html += f"""
+            <tr>
+                <td class="text-muted">{idx}</td>
+                <td><span class="fw-semibold">{r['name']}</span></td>
+                <td><span class="badge {badge_cls} px-3 py-2"><i class="bi {icon} me-1"></i>{r['action']}</span></td>
+                <td><i class="bi bi-calendar3 me-1 text-muted"></i>{r['date']}</td>
+                <td><i class="bi bi-clock me-1 text-muted"></i>{r['time']}</td>
+            </tr>"""
+    else:
+        rows_html = """
         <tr>
-            <td>{r['name']}</td>
-            <td>{r['action']}</td>
-            <td>{r['date']}</td>
-            <td>{r['time']}</td>
+            <td colspan="5" class="text-center text-muted py-4">
+                <i class="bi bi-inbox" style="font-size:2rem;"></i>
+                <p class="mb-0 mt-2">No attendance records yet.</p>
+            </td>
         </tr>"""
+
+    total_users = len(users)
+    total_records = len(records)
 
     return f"""
     <!DOCTYPE html>
-    <html>
-    <head><title>Admin Panel</title><style>{COMMON_STYLE}</style></head>
+    <html lang="en">
+    <head>
+        <title>Admin - AttendanceApp</title>
+        {BOOTSTRAP_HEAD}
+        <style>body {{ background: #f0f2f5; }}</style>
+    </head>
     <body>
-        <div class="nav">
-            <a href="{url_for('home')}">Home</a>
-            <a href="{url_for('logout')}">Logout</a>
+        {navbar_html("admin")}
+        <div class="container">
+            <!-- Stats Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="rounded-3 p-3 me-3" style="background: #e8f5e9;">
+                                <i class="bi bi-people-fill text-success" style="font-size:1.5rem;"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small">Total Users</div>
+                                <div class="fw-bold fs-4">{total_users}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="rounded-3 p-3 me-3" style="background: #e3f2fd;">
+                                <i class="bi bi-clipboard-data-fill text-primary" style="font-size:1.5rem;"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small">Total Records</div>
+                                <div class="fw-bold fs-4">{total_records}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body d-flex align-items-center">
+                            <div class="rounded-3 p-3 me-3" style="background: #fce4ec;">
+                                <i class="bi bi-calendar-check-fill text-danger" style="font-size:1.5rem;"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted small">Today</div>
+                                <div class="fw-bold fs-6">{datetime.now().strftime("%b %d, %Y")}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registered Users -->
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-people me-2"></i>Registered Users</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Role</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {users_html}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- All Attendance Records -->
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-table me-2"></i>All Attendance Records</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Action</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {rows_html}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-        <h2>Admin Panel</h2>
-
-        <h3>Registered Users</h3>
-        <table>
-            <tr>
-                <th>ID</th>
-                <th>Username</th>
-                <th>Role</th>
-            </tr>
-            {users_html}
-        </table>
-
-        <h3>All Attendance Records</h3>
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Action</th>
-                <th>Date</th>
-                <th>Time</th>
-            </tr>
-            {rows_html}
-        </table>
+        {BOOTSTRAP_SCRIPTS}
     </body>
     </html>
     """
