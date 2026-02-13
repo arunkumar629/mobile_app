@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Impact Assessment{% endblock %}{% block page_title %}Impact Assessment{% endblock %}
+{% block content %}
+<a href="{{ url_for('reports_index') }}" class="btn btn-outline btn-sm" style="margin-bottom:16px;">&larr; Back</a>
+<div class="grid-2">
+    <div class="card"><div class="card-header">Satisfaction</div><p style="font-size:28px;font-weight:700;color:var(--primary);">{{ "%.1f"|format(avg_satisfaction.avg or 0) }}<span style="font-size:16px;color:var(--text-muted);"> / 10</span></p></div>
+    <div class="card"><div class="card-header">Usage Frequency</div>{% if usage %}{% for u in usage %}<div style="display:flex;justify-content:space-between;padding:4px 0;"><span>{{ u.usage_frequency }}</span><strong>{{ u.count }}</strong></div>{% endfor %}{% else %}<p style="color:var(--text-muted)">No data</p>{% endif %}</div>
+</div>
+{% if stories %}<div class="card" style="margin-top:16px;"><div class="card-header">Success Stories</div>
+{% for s in stories %}<div style="padding:12px 0;border-bottom:1px solid var(--border);"><strong>{{ s.name }}</strong><span style="float:right;font-size:12px;color:var(--text-muted);">{{ s.followup_date }}</span><p style="margin-top:4px;">{{ s.success_story }}</p></div>{% endfor %}</div>{% endif %}
+{% endblock %}

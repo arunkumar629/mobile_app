@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if event else 'Create' }} Event{% endblock %}{% block page_title %}{{ 'Edit' if event else 'Create' }} Event{% endblock %}
+{% block content %}<div class="card"><form method="post" class="form-grid">
+    <div class="form-group"><label for="name">Event Name *</label><input type="text" name="name" id="name" value="{{ event.name if event else '' }}" required></div>
+    <div class="form-group"><label for="event_type">Type</label><select name="event_type" id="event_type">{% for t in ['Distribution','Training','Awareness','Assessment','Other'] %}<option value="{{ t }}" {% if event and event.event_type == t %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="partner_id">Partner</label><select name="partner_id" id="partner_id"><option value="">None</option>{% for p in partners %}<option value="{{ p.id }}" {% if event and event.partner_id == p.id %}selected{% endif %}>{{ p.name }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="event_date">Date</label><input type="date" name="event_date" id="event_date" value="{{ event.event_date if event and event.event_date else '' }}"></div>
+    <div class="form-group"><label for="location">Venue</label><input type="text" name="location" id="location" value="{{ event.location if event else '' }}"></div>
+    <div class="form-group"><label for="status">Status</label><select name="status" id="status">{% for s in ['Planned','In Progress','Completed','Cancelled'] %}<option value="{{ s }}" {% if event and event.status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="city">City</label><input type="text" name="city" id="city" value="{{ event.city if event else '' }}"></div>
+    <div class="form-group"><label for="state">State</label><input type="text" name="state" id="state" value="{{ event.state if event else '' }}"></div>
+    <div class="form-group"><label for="expected_beneficiaries">Expected Beneficiaries</label><input type="number" name="expected_beneficiaries" id="expected_beneficiaries" min="0" value="{{ event.expected_beneficiaries if event else 0 }}"></div>
+    {% if event %}<div class="form-group"><label for="actual_beneficiaries">Actual Beneficiaries</label><input type="number" name="actual_beneficiaries" id="actual_beneficiaries" min="0" value="{{ event.actual_beneficiaries if event else 0 }}"></div>{% endif %}
+    <div class="form-group"><label for="chief_guest">Chief Guest</label><input type="text" name="chief_guest" id="chief_guest" value="{{ event.chief_guest if event else '' }}"></div>
+    <div class="form-group form-full"><label for="notes">Notes</label><textarea name="notes" id="notes">{{ event.notes if event else '' }}</textarea></div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary">{{ 'Update' if event else 'Create' }} Event</button><a href="{{ url_for('event_list') }}" class="btn btn-outline">Cancel</a></div>
+</form></div>{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if record else 'Add' }} Training{% endblock %}{% block page_title %}{{ 'Edit' if record else 'Add' }} Training{% endblock %}
+{% block content %}<div class="card"><form method="post" class="form-grid">
+    <div class="form-group"><label for="beneficiary_id">Beneficiary *</label><select name="beneficiary_id" id="beneficiary_id" required><option value="">Select</option>{% for b in beneficiaries %}<option value="{{ b.id }}" {% if record and record.beneficiary_id == b.id %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="device_type_id">Device</label><select name="device_type_id" id="device_type_id"><option value="">None</option>{% for dt in device_types %}<option value="{{ dt.id }}" {% if record and record.device_type_id == dt.id %}selected{% endif %}>{{ dt.name }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="training_type">Type</label><select name="training_type" id="training_type">{% for t in ['Device Usage','Screen Reader','Mobile Accessibility','Computer Skills','Daily Living Skills','Other'] %}<option value="{{ t }}" {% if record and record.training_type == t %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="trainer_name">Trainer</label><input type="text" name="trainer_name" id="trainer_name" value="{{ record.trainer_name if record else '' }}"></div>
+    <div class="form-group"><label for="training_date">Date</label><input type="date" name="training_date" id="training_date" value="{{ record.training_date if record and record.training_date else '' }}"></div>
+    <div class="form-group"><label for="duration_hours">Hours</label><input type="number" name="duration_hours" id="duration_hours" min="0.5" step="0.5" value="{{ record.duration_hours if record else 1 }}"></div>
+    <div class="form-group"><label for="status">Status</label><select name="status" id="status">{% for s in ['Scheduled','In Progress','Completed','Cancelled'] %}<option value="{{ s }}" {% if record and record.status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="completion_date">Completion Date</label><input type="date" name="completion_date" id="completion_date" value="{{ record.completion_date if record and record.completion_date else '' }}"></div>
+    <div class="form-group"><label>Certificate?</label><label style="font-weight:normal;display:flex;align-items:center;gap:6px;margin-top:6px;"><input type="checkbox" name="certificate_issued" value="1" {% if record and record.certificate_issued %}checked{% endif %}> Yes</label></div>
+    <div class="form-group form-full"><label for="notes">Notes</label><textarea name="notes" id="notes">{{ record.notes if record else '' }}</textarea></div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary">{{ 'Update' if record else 'Add' }}</button><a href="{{ url_for('training_list') }}" class="btn btn-outline">Cancel</a></div>
+</form></div>{% endblock %}

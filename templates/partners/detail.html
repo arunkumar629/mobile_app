@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ partner.name }}{% endblock %}{% block page_title %}{{ partner.name }}{% endblock %}
+{% block content %}
+<div class="detail-header"><div><span class="badge badge-primary">{{ partner.type }}</span> <span class="badge {% if partner.mou_status == 'Signed' %}badge-success{% else %}badge-warning{% endif %}">MoU: {{ partner.mou_status }}</span></div>
+<div class="btn-group"><a href="{{ url_for('partner_edit', id=partner.id) }}" class="btn btn-outline btn-sm">Edit</a>
+<form method="post" action="{{ url_for('partner_delete', id=partner.id) }}" style="display:inline;" onsubmit="return confirm('Delete this partner?')"><button type="submit" class="btn btn-danger btn-sm">Delete</button></form></div></div>
+<div class="card"><div class="detail-grid">
+    <div class="detail-item"><label>Contact</label><p>{{ partner.contact_person or '-' }}</p></div>
+    <div class="detail-item"><label>Email</label><p>{{ partner.email or '-' }}</p></div>
+    <div class="detail-item"><label>Phone</label><p>{{ partner.phone or '-' }}</p></div>
+    <div class="detail-item"><label>Location</label><p>{{ partner.city or '' }}{% if partner.state %}, {{ partner.state }}{% endif %}</p></div>
+    <div class="detail-item"><label>Address</label><p>{{ partner.address or '-' }}</p></div>
+    <div class="detail-item"><label>MoU Date</label><p>{{ partner.mou_date or '-' }}</p></div>
+</div></div>
+<div class="section"><h3 class="section-title">Beneficiaries ({{ beneficiaries|length }})</h3>
+{% if beneficiaries %}<div class="table-wrap"><table><thead><tr><th>Name</th><th>Age</th><th>Vision</th><th>City</th></tr></thead><tbody>
+{% for b in beneficiaries %}<tr><td><a href="{{ url_for('beneficiary_detail', id=b.id) }}" style="color:var(--primary)">{{ b.name }}</a></td><td>{{ b.age or '-' }}</td><td>{{ b.vision_category }}</td><td>{{ b.city or '-' }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p style="color:var(--text-muted);padding:12px 0;">No beneficiaries linked.</p>{% endif %}</div>
+<div class="section"><h3 class="section-title">Events ({{ events|length }})</h3>
+{% if events %}<div class="table-wrap"><table><thead><tr><th>Name</th><th>Date</th><th>Status</th></tr></thead><tbody>
+{% for e in events %}<tr><td><a href="{{ url_for('event_detail', id=e.id) }}" style="color:var(--primary)">{{ e.name }}</a></td><td>{{ e.event_date or '-' }}</td><td><span class="badge {% if e.status == 'Completed' %}badge-success{% else %}badge-info{% endif %}">{{ e.status }}</span></td></tr>{% endfor %}</tbody></table></div>{% else %}<p style="color:var(--text-muted);padding:12px 0;">No events.</p>{% endif %}</div>
+{% endblock %}

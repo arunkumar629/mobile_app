@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Budget{% endblock %}{% block page_title %}Budget & Finance{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><p style="color:var(--text-muted);">Expense tracking</p><a href="{{ url_for('budget_add') }}" class="btn btn-primary">+ Add Entry</a></div>
+{% if summary %}<div class="card"><div class="card-header">Summary by Category</div><div class="table-wrap"><table><thead><tr><th>Category</th><th style="text-align:right">Allocated</th><th style="text-align:right">Spent</th><th style="text-align:right">Remaining</th></tr></thead><tbody>
+{% for s in summary %}<tr><td>{{ s.category }}</td><td style="text-align:right">&#8377;{{ fmt_inr(s.total_amount) }}</td><td style="text-align:right">&#8377;{{ fmt_inr(s.total_spent) }}</td><td style="text-align:right">&#8377;{{ fmt_inr(s.total_amount - s.total_spent) }}</td></tr>{% endfor %}
+</tbody></table></div></div>{% endif %}
+<div class="section"><h3 class="section-title">All Entries</h3>
+{% if entries %}<div class="table-wrap"><table><thead><tr><th>Category</th><th>Description</th><th>Quarter</th><th>Vendor</th><th style="text-align:right">Amount</th><th style="text-align:right">Spent</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+{% for e in entries %}<tr><td>{{ e.category }}</td><td>{{ e.description or '-' }}</td><td>{{ e.quarter or '-' }}</td><td>{{ e.vendor or '-' }}</td><td style="text-align:right">&#8377;{{ fmt_inr(e.amount) }}</td><td style="text-align:right">&#8377;{{ fmt_inr(e.spent) }}</td><td><span class="badge {% if e.payment_status == 'Paid' %}badge-success{% elif e.payment_status == 'Partial' %}badge-warning{% else %}badge-info{% endif %}">{{ e.payment_status }}</span></td><td><a href="{{ url_for('budget_edit', id=e.id) }}" class="btn btn-outline btn-sm">Edit</a></td></tr>{% endfor %}
+</tbody></table></div>{% else %}<div class="empty-state"><p>No entries.</p></div>{% endif %}</div>{% endblock %}

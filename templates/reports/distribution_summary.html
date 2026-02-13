@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Distribution Summary{% endblock %}{% block page_title %}Distribution Summary{% endblock %}
+{% block content %}
+<a href="{{ url_for('reports_index') }}" class="btn btn-outline btn-sm" style="margin-bottom:16px;">&larr; Back to Reports</a>
+<div class="card"><div class="table-wrap"><table><thead><tr><th>Device Type</th><th style="text-align:right">Unit Cost</th><th style="text-align:right">Distributed</th><th style="text-align:right">Total Value</th></tr></thead><tbody>
+{% set ns = namespace(total_count=0, total_value=0) %}
+{% for d in data %}<tr><td>{{ d.name }}</td><td style="text-align:right">&#8377;{{ fmt_inr(d.unit_cost) }}</td><td style="text-align:right">{{ d.count }}</td><td style="text-align:right">&#8377;{{ fmt_inr(d.total_value) }}</td></tr>
+{% set ns.total_count = ns.total_count + d.count %}{% set ns.total_value = ns.total_value + d.total_value %}{% endfor %}
+<tr style="font-weight:700;background:var(--primary-light);"><td>TOTAL</td><td></td><td style="text-align:right">{{ ns.total_count }}</td><td style="text-align:right">&#8377;{{ fmt_inr(ns.total_value) }}</td></tr>
+</tbody></table></div></div>{% endblock %}

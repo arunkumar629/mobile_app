@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}{% block page_title %}Reports & Analytics{% endblock %}
+{% block content %}
+<div class="grid-2">
+    <div class="card"><div class="card-header">&#128202; Distribution Summary</div><p>Devices by type with values.</p><a href="{{ url_for('report_distribution_summary') }}" class="btn btn-outline btn-sm" style="margin-top:12px;">View</a></div>
+    <div class="card"><div class="card-header">&#127758; State-wise Report</div><p>Beneficiaries by state.</p><a href="{{ url_for('report_state_wise') }}" class="btn btn-outline btn-sm" style="margin-top:12px;">View</a></div>
+    <div class="card"><div class="card-header">&#128200; Impact Assessment</div><p>Satisfaction and success stories.</p><a href="{{ url_for('report_impact') }}" class="btn btn-outline btn-sm" style="margin-top:12px;">View</a></div>
+    <div class="card"><div class="card-header">&#129309; Partner Performance</div><p>Distributions per partner.</p><a href="{{ url_for('report_partner_performance') }}" class="btn btn-outline btn-sm" style="margin-top:12px;">View</a></div>
+</div>
+<div class="grid-2" style="margin-top:20px;">
+    <div class="card"><div class="card-header">&#128196; Generate Word Report (.docx)</div>
+        <p style="margin-bottom:12px;">Generate quarterly or annual progress report in SATHI format.</p>
+        <form method="post" action="{{ url_for('generate_word_report') }}" style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;">
+            <div class="form-group" style="margin:0;"><label>Report Type</label><select name="report_type"><option value="quarterly">Quarterly</option><option value="annual">Annual</option></select></div>
+            <div class="form-group" style="margin:0;"><label>Quarter</label><select name="quarter"><option value="Q1">Q1</option><option value="Q2">Q2</option><option value="Q3">Q3</option><option value="Q4">Q4</option></select></div>
+            <div class="form-group" style="margin:0;"><label>Year</label><select name="year"><option value="2026">2026</option><option value="2025">2025</option></select></div>
+            <button type="submit" class="btn btn-primary btn-sm">&#11015; Generate .docx</button>
+        </form></div>
+    <div class="card"><div class="card-header">&#128190; Export Data (.xlsx)</div>
+        <p style="margin-bottom:12px;">Download formatted Excel data exports.</p>
+        <form method="post" action="{{ url_for('generate_excel_report') }}" style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;">
+            <div class="form-group" style="margin:0;"><label>Data Type</label><select name="excel_report_type">
+                <option value="beneficiaries">Beneficiaries</option><option value="distributions">Distributions</option>
+                <option value="partners">Partners</option><option value="inventory">Inventory</option><option value="budget">Budget</option>
+            </select></div>
+            <button type="submit" class="btn btn-accent btn-sm">&#11015; Export .xlsx</button>
+        </form></div>
+</div>
+<div class="card" style="margin-top:20px;"><div class="card-header">&#128190; Quick CSV Export</div><div class="btn-group" style="margin-top:8px;">
+    <a href="{{ url_for('report_export', report_type='beneficiaries') }}" class="btn btn-outline btn-sm">Beneficiaries CSV</a>
+    <a href="{{ url_for('report_export', report_type='distributions') }}" class="btn btn-outline btn-sm">Distributions CSV</a>
+    <a href="{{ url_for('report_export', report_type='partners') }}" class="btn btn-outline btn-sm">Partners CSV</a></div></div>
+{% endblock %}

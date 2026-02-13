@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "macros.html" import pagination %}
+{% block title %}Beneficiaries{% endblock %}{% block page_title %}Beneficiaries{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+    <p style="color:var(--text-muted);">Manage program beneficiaries</p>
+    <div class="btn-group">
+        <a href="{{ url_for('beneficiary_add') }}" class="btn btn-primary btn-sm">+ Register Beneficiary</a>
+        <a href="{{ url_for('beneficiary_download_template') }}" class="btn btn-outline btn-sm">&#11015; Download Template</a>
+        <a href="{{ url_for('beneficiary_download_data') }}" class="btn btn-outline btn-sm">&#11015; Export Excel</a>
+    </div></div>
+<div class="card" style="margin-bottom:16px;"><div class="card-header">&#11014; Upload Beneficiaries from Excel</div>
+    <form method="post" action="{{ url_for('beneficiary_upload') }}" enctype="multipart/form-data" style="display:flex;gap:10px;align-items:end;margin-top:8px;">
+        <div class="form-group" style="margin:0;flex:1;"><input type="file" name="file" accept=".xlsx,.xls" required></div>
+        <button type="submit" class="btn btn-accent btn-sm">Upload</button>
+    </form><p style="font-size:12px;color:var(--text-muted);margin-top:4px;">Upload .xlsx or .xls file matching the template format (Row 1=title, Row 2=headers, Row 3+ data)</p></div>
+<div class="filters"><form method="get" style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;width:100%;">
+    <div class="form-group"><label for="search">Search</label><input type="text" name="search" id="search" value="{{ search }}" placeholder="Name, phone, Aadhar..."></div>
+    <div class="form-group"><label for="state">State</label><select name="state" id="state"><option value="">All States</option>{% for s in states %}<option value="{{ s }}" {% if state == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="category">Vision</label><select name="category" id="category"><option value="">All</option>{% for c in ['Low Vision','Blind','CVI','Other'] %}<option value="{{ c }}" {% if category == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
+    <button type="submit" class="btn btn-outline btn-sm">Filter</button></form></div>
+{% if beneficiaries %}<div class="table-wrap"><table><thead><tr><th>Name</th><th>Age</th><th>Vision</th><th>Partner</th><th>Location</th><th>Devices</th><th>Actions</th></tr></thead><tbody>
+{% for b in beneficiaries %}<tr>
+    <td><a href="{{ url_for('beneficiary_detail', id=b.id) }}" style="color:var(--primary);font-weight:600;">{{ b.name }}</a></td>
+    <td>{{ b.age or '-' }}</td><td><span class="badge badge-info">{{ b.vision_category }}</span></td>
+    <td>{{ b.partner_name or '-' }}</td><td>{{ b.city or '' }}{% if b.state %}, {{ b.state }}{% endif %}</td>
+    <td style="text-align:center;">{{ b.device_count }}</td>
+    <td><a href="{{ url_for('beneficiary_edit', id=b.id) }}" class="btn btn-outline btn-sm">Edit</a></td></tr>{% endfor %}
+</tbody></table></div>{{ pagination(page, total_pages, 'beneficiary_list') }}
+{% else %}<div class="empty-state"><p>No beneficiaries found.</p><a href="{{ url_for('beneficiary_add') }}" class="btn btn-primary">+ Register First Beneficiary</a></div>{% endif %}
+{% endblock %}

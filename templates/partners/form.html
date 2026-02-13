@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if partner else 'Add' }} Partner{% endblock %}{% block page_title %}{{ 'Edit' if partner else 'Add New' }} Partner{% endblock %}
+{% block content %}<div class="card"><form method="post" class="form-grid">
+    <div class="form-group"><label for="name">Organization Name *</label><input type="text" name="name" id="name" value="{{ partner.name if partner else '' }}" required></div>
+    <div class="form-group"><label for="type">Type</label><select name="type" id="type">{% for t in ['School','Hospital','NGO','Rotary Club','Government','Corporate','Other'] %}<option value="{{ t }}" {% if partner and partner.type == t %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="contact_person">Contact Person</label><input type="text" name="contact_person" id="contact_person" value="{{ partner.contact_person if partner else '' }}"></div>
+    <div class="form-group"><label for="email">Email</label><input type="email" name="email" id="email" value="{{ partner.email if partner else '' }}"></div>
+    <div class="form-group"><label for="phone">Phone</label><input type="tel" name="phone" id="phone" value="{{ partner.phone if partner else '' }}"></div>
+    <div class="form-group"><label for="mou_status">MoU Status</label><select name="mou_status" id="mou_status">{% for s in ['Pending','Signed','Expired','Not Required'] %}<option value="{{ s }}" {% if partner and partner.mou_status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="mou_date">MoU Date</label><input type="date" name="mou_date" id="mou_date" value="{{ partner.mou_date if partner and partner.mou_date else '' }}"></div>
+    <div class="form-group form-full"><label for="address">Address</label><input type="text" name="address" id="address" value="{{ partner.address if partner else '' }}"></div>
+    <div class="form-group"><label for="city">City</label><input type="text" name="city" id="city" value="{{ partner.city if partner else '' }}"></div>
+    <div class="form-group"><label for="state">State</label><input type="text" name="state" id="state" value="{{ partner.state if partner else '' }}"></div>
+    <div class="form-group form-full"><label for="notes">Notes</label><textarea name="notes" id="notes">{{ partner.notes if partner else '' }}</textarea></div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary">{{ 'Update' if partner else 'Add' }} Partner</button><a href="{{ url_for('partner_list') }}" class="btn btn-outline">Cancel</a></div>
+</form></div>{% endblock %}

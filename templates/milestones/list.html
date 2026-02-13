@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Milestones{% endblock %}{% block page_title %}2026 Milestones{% endblock %}
+{% block content %}
+<p style="color:var(--text-muted);margin-bottom:20px;">Progress against 2026 targets</p>
+{% for m in milestones %}<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div><strong style="font-size:16px;">{{ m.name }}</strong> <span class="badge badge-primary">{{ m.category }}</span> <span class="badge {% if m.status == 'Completed' %}badge-success{% elif m.status == 'At Risk' %}badge-danger{% else %}badge-info{% endif %}">{{ m.status }}</span></div>
+        <a href="{{ url_for('milestone_edit', id=m.id) }}" class="btn btn-outline btn-sm">Update</a></div>
+    <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;"><span>Progress: <strong>{{ m.current_value }}</strong> / {{ m.target_value }} {{ m.unit }}</span><span>Deadline: {{ m.deadline or '-' }}</span></div>
+    {% set pct = (m.current_value / m.target_value * 100) if m.target_value > 0 else 0 %}
+    <div class="progress-bar" style="height:24px;"><div class="progress-fill" style="width:{{ [pct,100]|min }}%;background:{% if pct >= 100 %}var(--success){% elif pct >= 50 %}var(--primary){% elif pct >= 25 %}var(--accent){% else %}var(--danger){% endif %};"></div><div class="progress-text" style="line-height:24px;">{{ "%.1f"|format(pct) }}%</div></div>
+</div>{% endfor %}{% endblock %}

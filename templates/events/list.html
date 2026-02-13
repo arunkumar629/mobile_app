@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% from "macros.html" import pagination %}
+{% block title %}Events{% endblock %}{% block page_title %}Events{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><p style="color:var(--text-muted);">Manage events</p><a href="{{ url_for('event_add') }}" class="btn btn-primary">+ Create Event</a></div>
+<div class="filters"><form method="get" style="display:flex;gap:10px;align-items:end;"><div class="form-group"><label for="status">Status</label><select name="status" id="status"><option value="">All</option>{% for s in ['Planned','In Progress','Completed','Cancelled'] %}<option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div><button type="submit" class="btn btn-outline btn-sm">Filter</button></form></div>
+{% if events %}<div class="table-wrap"><table><thead><tr><th>Name</th><th>Date</th><th>Partner</th><th>Location</th><th>Status</th><th>Distributions</th><th>Actions</th></tr></thead><tbody>
+{% for e in events %}<tr><td><a href="{{ url_for('event_detail', id=e.id) }}" style="color:var(--primary);font-weight:600;">{{ e.name }}</a></td><td>{{ e.event_date or '-' }}</td><td>{{ e.partner_name or '-' }}</td><td>{{ e.city or '' }}{% if e.state %}, {{ e.state }}{% endif %}</td><td><span class="badge {% if e.status == 'Completed' %}badge-success{% elif e.status == 'Cancelled' %}badge-danger{% else %}badge-info{% endif %}">{{ e.status }}</span></td><td style="text-align:center;">{{ e.distribution_count }}</td><td><a href="{{ url_for('event_edit', id=e.id) }}" class="btn btn-outline btn-sm">Edit</a></td></tr>{% endfor %}
+</tbody></table></div>{{ pagination(page, total_pages, 'event_list') }}
+{% else %}<div class="empty-state"><p>No events found.</p><a href="{{ url_for('event_add') }}" class="btn btn-primary">+ Create First Event</a></div>{% endif %}{% endblock %}

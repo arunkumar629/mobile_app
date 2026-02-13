@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if distribution else 'Record' }} Distribution{% endblock %}{% block page_title %}{{ 'Edit' if distribution else 'Record' }} Distribution{% endblock %}
+{% block content %}<div class="card"><form method="post" class="form-grid">
+    <div class="form-group"><label for="beneficiary_id">Beneficiary *</label><select name="beneficiary_id" id="beneficiary_id" required><option value="">Select</option>{% for b in beneficiaries %}<option value="{{ b.id }}" {% if distribution and distribution.beneficiary_id == b.id %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="device_type_id">Device Type *</label><select name="device_type_id" id="device_type_id" required><option value="">Select</option>{% for dt in device_types %}<option value="{{ dt.id }}" {% if distribution and distribution.device_type_id == dt.id %}selected{% endif %}>{{ dt.name }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="event_id">Event</label><select name="event_id" id="event_id"><option value="">None</option>{% for e in events %}<option value="{{ e.id }}" {% if distribution and distribution.event_id == e.id %}selected{% endif %}>{{ e.name }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="serial_number">Serial Number</label><input type="text" name="serial_number" id="serial_number" value="{{ distribution.serial_number if distribution else '' }}"></div>
+    <div class="form-group"><label for="distribution_date">Date</label><input type="date" name="distribution_date" id="distribution_date" value="{{ distribution.distribution_date if distribution and distribution.distribution_date else '' }}"></div>
+    <div class="form-group"><label for="condition_at_delivery">Condition</label><select name="condition_at_delivery" id="condition_at_delivery">{% for c in ['New','Refurbished','Used'] %}<option value="{{ c }}" {% if distribution and distribution.condition_at_delivery == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
+    <div class="form-group form-full"><label for="notes">Notes</label><textarea name="notes" id="notes">{{ distribution.notes if distribution else '' }}</textarea></div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary">{{ 'Update' if distribution else 'Record' }}</button><a href="{{ url_for('distribution_list') }}" class="btn btn-outline">Cancel</a></div>
+</form></div>{% endblock %}

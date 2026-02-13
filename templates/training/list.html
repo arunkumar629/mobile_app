@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% from "macros.html" import pagination %}
+{% block title %}Training{% endblock %}{% block page_title %}Training Records{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><p style="color:var(--text-muted);">Training sessions</p><a href="{{ url_for('training_add') }}" class="btn btn-primary">+ Add Training</a></div>
+{% if records %}<div class="table-wrap"><table><thead><tr><th>Beneficiary</th><th>Type</th><th>Device</th><th>Trainer</th><th>Date</th><th>Hours</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+{% for r in records %}<tr><td><a href="{{ url_for('beneficiary_detail', id=r.beneficiary_id) }}" style="color:var(--primary)">{{ r.beneficiary_name }}</a></td><td>{{ r.training_type }}</td><td>{{ r.device_name or '-' }}</td><td>{{ r.trainer_name or '-' }}</td><td>{{ r.training_date or '-' }}</td><td>{{ r.duration_hours }}</td><td><span class="badge {% if r.status == 'Completed' %}badge-success{% else %}badge-info{% endif %}">{{ r.status }}</span></td><td><a href="{{ url_for('training_edit', id=r.id) }}" class="btn btn-outline btn-sm">Edit</a></td></tr>{% endfor %}
+</tbody></table></div>{{ pagination(page, total_pages, 'training_list') }}
+{% else %}<div class="empty-state"><p>No training records.</p><a href="{{ url_for('training_add') }}" class="btn btn-primary">+ Add First</a></div>{% endif %}{% endblock %}

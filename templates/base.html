@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SATHI 2026{% endblock %} - Vision-Aid</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <nav class="sidebar" id="sidebar" aria-label="Main navigation">
+        <div class="sidebar-header">
+            <h1 class="sidebar-brand">SATHI 2026</h1>
+            <p class="sidebar-tagline">Vision-Aid Program</p>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="{{ url_for('dashboard') }}" class="nav-link{% if request.endpoint == 'dashboard' %} active{% endif %}">&#127968; Dashboard</a></li>
+            <li><a href="{{ url_for('partner_list') }}" class="nav-link{% if 'partner' in (request.endpoint or '') %} active{% endif %}">&#129309; Partners</a></li>
+            <li><a href="{{ url_for('beneficiary_list') }}" class="nav-link{% if 'beneficiary' in (request.endpoint or '') %} active{% endif %}">&#128101; Beneficiaries</a></li>
+            <li><a href="{{ url_for('event_list') }}" class="nav-link{% if 'event' in (request.endpoint or '') %} active{% endif %}">&#128197; Events</a></li>
+            <li><a href="{{ url_for('distribution_list') }}" class="nav-link{% if 'distribution' in (request.endpoint or '') %} active{% endif %}">&#128230; Distributions</a></li>
+            <li><a href="{{ url_for('inventory_list') }}" class="nav-link{% if 'inventory' in (request.endpoint or '') %} active{% endif %}">&#128451; Inventory</a></li>
+            <li><a href="{{ url_for('training_list') }}" class="nav-link{% if 'training' in (request.endpoint or '') %} active{% endif %}">&#127891; Training</a></li>
+            <li><a href="{{ url_for('followup_list') }}" class="nav-link{% if 'followup' in (request.endpoint or '') %} active{% endif %}">&#128200; Follow-ups</a></li>
+            <li><a href="{{ url_for('budget_list') }}" class="nav-link{% if 'budget' in (request.endpoint or '') %} active{% endif %}">&#128176; Budget</a></li>
+            <li><a href="{{ url_for('milestone_list') }}" class="nav-link{% if 'milestone' in (request.endpoint or '') %} active{% endif %}">&#127942; Milestones</a></li>
+            <li><a href="{{ url_for('reports_index') }}" class="nav-link{% if 'report' in (request.endpoint or '') %} active{% endif %}">&#128202; Reports</a></li>
+            <li><a href="{{ url_for('activity_log') }}" class="nav-link{% if 'activity' in (request.endpoint or '') %} active{% endif %}">&#128221; Activity Log</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <a href="{{ url_for('logout') }}" class="nav-link">&#128274; Logout</a>
+        </div>
+    </nav>
+    <main class="main-content" id="main-content">
+        <header class="top-bar">
+            <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Toggle menu">&#9776;</button>
+            <h2 class="page-title">{% block page_title %}Dashboard{% endblock %}</h2>
+        </header>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}<div class="flash-messages">
+            {% for cat, msg in messages %}<div class="alert alert-{{ cat }}" role="alert">{{ msg }}<button class="alert-close" onclick="this.parentElement.remove()" aria-label="Close">&times;</button></div>{% endfor %}
+        </div>{% endif %}{% endwith %}
+        <div class="content-area">{% block content %}{% endblock %}</div>
+    </main>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

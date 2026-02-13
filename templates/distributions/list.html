@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% from "macros.html" import pagination %}
+{% block title %}Distributions{% endblock %}{% block page_title %}Device Distributions{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><p style="color:var(--text-muted);">Track device distributions</p><a href="{{ url_for('distribution_add') }}" class="btn btn-primary">+ Record Distribution</a></div>
+<div class="filters"><form method="get" style="display:flex;gap:10px;align-items:end;"><div class="form-group"><label for="device_type">Device Type</label><select name="device_type" id="device_type"><option value="">All</option>{% for dt in device_types %}<option value="{{ dt.id }}" {% if device_filter == dt.id|string %}selected{% endif %}>{{ dt.name }}</option>{% endfor %}</select></div><button type="submit" class="btn btn-outline btn-sm">Filter</button></form></div>
+{% if distributions %}<div class="table-wrap"><table><thead><tr><th>Beneficiary</th><th>Device</th><th>Serial #</th><th>Date</th><th>Event</th><th>Value</th><th>Actions</th></tr></thead><tbody>
+{% for d in distributions %}<tr><td><a href="{{ url_for('beneficiary_detail', id=d.beneficiary_id) }}" style="color:var(--primary)">{{ d.beneficiary_name }}</a></td><td>{{ d.device_name }}</td><td>{{ d.serial_number or '-' }}</td><td>{{ d.distribution_date or '-' }}</td><td>{% if d.event_name %}<a href="{{ url_for('event_detail', id=d.event_id) }}" style="color:var(--primary)">{{ d.event_name }}</a>{% else %}-{% endif %}</td><td>&#8377;{{ fmt_inr(d.unit_cost) }}</td><td><a href="{{ url_for('distribution_edit', id=d.id) }}" class="btn btn-outline btn-sm">Edit</a></td></tr>{% endfor %}
+</tbody></table></div>{{ pagination(page, total_pages, 'distribution_list') }}
+{% else %}<div class="empty-state"><p>No distributions yet.</p><a href="{{ url_for('distribution_add') }}" class="btn btn-primary">+ Record First Distribution</a></div>{% endif %}{% endblock %}

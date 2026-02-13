@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Edit Milestone{% endblock %}{% block page_title %}Update Milestone{% endblock %}
+{% block content %}<div class="card"><form method="post" class="form-grid">
+    <div class="form-group"><label for="name">Name</label><input type="text" name="name" id="name" value="{{ milestone.name }}" required></div>
+    <div class="form-group"><label for="category">Category</label><input type="text" name="category" id="category" value="{{ milestone.category or '' }}"></div>
+    <div class="form-group"><label for="target_value">Target</label><input type="number" name="target_value" id="target_value" min="0" value="{{ milestone.target_value }}"></div>
+    <div class="form-group"><label for="current_value">Current</label><input type="number" name="current_value" id="current_value" min="0" value="{{ milestone.current_value }}"></div>
+    <div class="form-group"><label for="unit">Unit</label><input type="text" name="unit" id="unit" value="{{ milestone.unit or 'units' }}"></div>
+    <div class="form-group"><label for="deadline">Deadline</label><input type="date" name="deadline" id="deadline" value="{{ milestone.deadline if milestone.deadline else '' }}"></div>
+    <div class="form-group"><label for="status">Status</label><select name="status" id="status">{% for s in ['In Progress','On Track','At Risk','Completed'] %}<option value="{{ s }}" {% if milestone.status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+    <div class="form-group form-full"><label for="notes">Notes</label><textarea name="notes" id="notes">{{ milestone.notes if milestone.notes else '' }}</textarea></div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary">Update</button><a href="{{ url_for('milestone_list') }}" class="btn btn-outline">Cancel</a></div>
+</form></div>{% endblock %}

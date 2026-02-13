@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "macros.html" import pagination %}
+{% block title %}Activity Log{% endblock %}
+{% block page_title %}Activity Log{% endblock %}
+{% block content %}
+<p style="color:var(--text-muted);margin-bottom:16px;">Complete audit trail of all actions</p>
+{% if logs %}<div class="table-wrap"><table>
+    <thead><tr><th>Time</th><th>Action</th><th>Entity</th><th>Name</th><th>Details</th></tr></thead>
+    <tbody>{% for l in logs %}<tr>
+        <td style="white-space:nowrap;font-size:13px;">{{ l.created_at }}</td>
+        <td><span class="badge {% if l.action == 'Created' %}badge-success{% elif l.action == 'Updated' %}badge-info{% elif l.action == 'Deleted' %}badge-danger{% else %}badge-primary{% endif %}">{{ l.action }}</span></td>
+        <td>{{ l.entity_type or '-' }}</td><td>{{ l.entity_name or '-' }}</td><td style="font-size:13px;">{{ l.details or '-' }}</td>
+    </tr>{% endfor %}</tbody></table></div>
+{{ pagination(page, total_pages, 'activity_log') }}
+{% else %}<div class="empty-state"><p>No activity recorded yet.</p></div>{% endif %}
+{% endblock %}

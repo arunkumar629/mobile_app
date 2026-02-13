@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if record else 'Record' }} Follow-up{% endblock %}{% block page_title %}{{ 'Edit' if record else 'Record' }} Follow-up{% endblock %}
+{% block content %}<div class="card"><form method="post" class="form-grid">
+    <div class="form-group"><label for="beneficiary_id">Beneficiary *</label><select name="beneficiary_id" id="beneficiary_id" required><option value="">Select</option>{% for b in beneficiaries %}<option value="{{ b.id }}" {% if record and record.beneficiary_id == b.id %}selected{% endif %}>{{ b.name }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="followup_date">Date</label><input type="date" name="followup_date" id="followup_date" value="{{ record.followup_date if record and record.followup_date else '' }}"></div>
+    <div class="form-group"><label for="followup_type">Type</label><select name="followup_type" id="followup_type">{% for t in ['Phone Call','Home Visit','Center Visit','Video Call','WhatsApp'] %}<option value="{{ t }}" {% if record and record.followup_type == t %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="satisfaction_rating">Satisfaction (1-10)</label><input type="number" name="satisfaction_rating" id="satisfaction_rating" min="1" max="10" value="{{ record.satisfaction_rating if record else 5 }}"></div>
+    <div class="form-group"><label for="usage_frequency">Usage</label><select name="usage_frequency" id="usage_frequency">{% for u in ['Daily','Several times a week','Weekly','Rarely','Not using'] %}<option value="{{ u }}" {% if record and record.usage_frequency == u %}selected{% endif %}>{{ u }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label>Device Working?</label><label style="font-weight:normal;display:flex;align-items:center;gap:6px;margin-top:6px;"><input type="checkbox" name="device_working" value="1" {% if not record or record.device_working %}checked{% endif %}> Yes</label></div>
+    <div class="form-group"><label>Needs Support?</label><label style="font-weight:normal;display:flex;align-items:center;gap:6px;margin-top:6px;"><input type="checkbox" name="needs_support" value="1" {% if record and record.needs_support %}checked{% endif %}> Yes</label></div>
+    <div class="form-group"><label for="conducted_by">Conducted By</label><input type="text" name="conducted_by" id="conducted_by" value="{{ record.conducted_by if record else '' }}"></div>
+    <div class="form-group form-full"><label for="challenges">Challenges</label><textarea name="challenges" id="challenges">{{ record.challenges if record else '' }}</textarea></div>
+    <div class="form-group form-full"><label for="success_story">Success Story</label><textarea name="success_story" id="success_story">{{ record.success_story if record else '' }}</textarea></div>
+    <div class="form-group form-full"><label for="notes">Notes</label><textarea name="notes" id="notes">{{ record.notes if record else '' }}</textarea></div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary">{{ 'Update' if record else 'Record' }}</button><a href="{{ url_for('followup_list') }}" class="btn btn-outline">Cancel</a></div>
+</form></div>{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ event.name }}{% endblock %}{% block page_title %}{{ event.name }}{% endblock %}
+{% block content %}
+<div class="detail-header"><div><span class="badge badge-primary">{{ event.event_type }}</span> <span class="badge {% if event.status == 'Completed' %}badge-success{% elif event.status == 'Cancelled' %}badge-danger{% else %}badge-info{% endif %}">{{ event.status }}</span></div>
+<div class="btn-group"><a href="{{ url_for('event_edit', id=event.id) }}" class="btn btn-outline btn-sm">Edit</a><a href="{{ url_for('distribution_add') }}" class="btn btn-accent btn-sm">+ Distribution</a>
+<form method="post" action="{{ url_for('event_delete', id=event.id) }}" style="display:inline;" onsubmit="return confirm('Delete?')"><button type="submit" class="btn btn-danger btn-sm">Delete</button></form></div></div>
+<div class="card"><div class="detail-grid">
+    <div class="detail-item"><label>Date</label><p>{{ event.event_date or '-' }}</p></div>
+    <div class="detail-item"><label>Partner</label><p>{% if event.partner_name %}<a href="{{ url_for('partner_detail', id=event.partner_id) }}" style="color:var(--primary)">{{ event.partner_name }}</a>{% else %}-{% endif %}</p></div>
+    <div class="detail-item"><label>Venue</label><p>{{ event.location or '-' }}</p></div>
+    <div class="detail-item"><label>Location</label><p>{{ event.city or '' }}{% if event.state %}, {{ event.state }}{% endif %}</p></div>
+    <div class="detail-item"><label>Expected</label><p>{{ event.expected_beneficiaries }}</p></div>
+    <div class="detail-item"><label>Actual</label><p>{{ event.actual_beneficiaries }}</p></div>
+    <div class="detail-item"><label>Chief Guest</label><p>{{ event.chief_guest or '-' }}</p></div>
+</div></div>
+<div class="section"><h3 class="section-title">Distributions ({{ distributions|length }})</h3>
+{% if distributions %}<div class="table-wrap"><table><thead><tr><th>Beneficiary</th><th>Device</th><th>Serial #</th></tr></thead><tbody>
+{% for d in distributions %}<tr><td><a href="{{ url_for('beneficiary_detail', id=d.beneficiary_id) }}" style="color:var(--primary)">{{ d.beneficiary_name }}</a></td><td>{{ d.device_name }}</td><td>{{ d.serial_number or '-' }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p style="color:var(--text-muted);padding:12px 0;">No distributions for this event.</p>{% endif %}</div>
+{% endblock %}

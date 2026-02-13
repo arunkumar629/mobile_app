@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if entry else 'Add' }} Budget{% endblock %}{% block page_title %}{{ 'Edit' if entry else 'Add' }} Budget Entry{% endblock %}
+{% block content %}<div class="card"><form method="post" class="form-grid">
+    <div class="form-group"><label for="category">Category *</label><select name="category" id="category" required>{% for c in ['Device Procurement','Training','Events','Logistics','Staff','Marketing','Technology','Other'] %}<option value="{{ c }}" {% if entry and entry.category == c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="quarter">Quarter</label><select name="quarter" id="quarter"><option value="">Select</option>{% for q in ['Q1 2026','Q2 2026','Q3 2026','Q4 2026'] %}<option value="{{ q }}" {% if entry and entry.quarter == q %}selected{% endif %}>{{ q }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="amount">Allocated (&#8377;)</label><input type="number" name="amount" id="amount" min="0" step="0.01" value="{{ entry.amount if entry else 0 }}"></div>
+    <div class="form-group"><label for="spent">Spent (&#8377;)</label><input type="number" name="spent" id="spent" min="0" step="0.01" value="{{ entry.spent if entry else 0 }}"></div>
+    <div class="form-group"><label for="vendor">Vendor</label><input type="text" name="vendor" id="vendor" value="{{ entry.vendor if entry else '' }}"></div>
+    <div class="form-group"><label for="payment_status">Status</label><select name="payment_status" id="payment_status">{% for s in ['Pending','Partial','Paid'] %}<option value="{{ s }}" {% if entry and entry.payment_status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="payment_date">Payment Date</label><input type="date" name="payment_date" id="payment_date" value="{{ entry.payment_date if entry and entry.payment_date else '' }}"></div>
+    <div class="form-group"><label for="invoice_number">Invoice #</label><input type="text" name="invoice_number" id="invoice_number" value="{{ entry.invoice_number if entry else '' }}"></div>
+    <div class="form-group form-full"><label for="description">Description</label><textarea name="description" id="description">{{ entry.description if entry else '' }}</textarea></div>
+    <div class="form-group form-full"><label for="notes">Notes</label><textarea name="notes" id="notes">{{ entry.notes if entry else '' }}</textarea></div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary">{{ 'Update' if entry else 'Add' }}</button><a href="{{ url_for('budget_list') }}" class="btn btn-outline">Cancel</a></div>
+</form></div>{% endblock %}

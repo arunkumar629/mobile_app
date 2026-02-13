@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}State-wise Report{% endblock %}{% block page_title %}State-wise Report{% endblock %}
+{% block content %}
+<a href="{{ url_for('reports_index') }}" class="btn btn-outline btn-sm" style="margin-bottom:16px;">&larr; Back</a>
+<div class="card"><div class="table-wrap"><table><thead><tr><th>State</th><th style="text-align:right">Beneficiaries</th><th style="text-align:right">Devices</th></tr></thead><tbody>
+{% for d in data %}<tr><td>{{ d.state }}</td><td style="text-align:right">{{ d.beneficiary_count }}</td><td style="text-align:right">{{ d.device_count }}</td></tr>{% endfor %}
+</tbody></table></div></div>{% endblock %}

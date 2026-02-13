@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "macros.html" import pagination %}
+{% block title %}Partners{% endblock %}{% block page_title %}Partners{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <p style="color:var(--text-muted);">Manage partner organizations</p>
+    <a href="{{ url_for('partner_add') }}" class="btn btn-primary">+ Add Partner</a></div>
+<div class="filters"><form method="get" style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;width:100%;">
+    <div class="form-group"><label for="search">Search</label><input type="text" name="search" id="search" value="{{ search }}" placeholder="Name or contact..."></div>
+    <div class="form-group"><label for="type">Type</label><select name="type" id="type"><option value="">All Types</option>{% for t in ['School','Hospital','NGO','Rotary Club','Government','Corporate','Other'] %}<option value="{{ t }}" {% if ptype == t %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+    <div class="form-group"><label for="state">State</label><select name="state" id="state"><option value="">All States</option>{% for s in states %}<option value="{{ s }}" {% if state == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+    <button type="submit" class="btn btn-outline btn-sm">Filter</button></form></div>
+{% if partners %}<div class="table-wrap"><table><thead><tr><th>Name</th><th>Type</th><th>Contact</th><th>Location</th><th>MoU</th><th>Beneficiaries</th><th>Actions</th></tr></thead><tbody>
+{% for p in partners %}<tr>
+    <td><a href="{{ url_for('partner_detail', id=p.id) }}" style="color:var(--primary);font-weight:600;">{{ p.name }}</a></td>
+    <td><span class="badge badge-primary">{{ p.type }}</span></td><td>{{ p.contact_person or '-' }}</td>
+    <td>{{ p.city or '' }}{% if p.state %}, {{ p.state }}{% endif %}</td>
+    <td><span class="badge {% if p.mou_status == 'Signed' %}badge-success{% elif p.mou_status == 'Pending' %}badge-warning{% else %}badge-info{% endif %}">{{ p.mou_status }}</span></td>
+    <td style="text-align:center;">{{ p.beneficiary_count }}</td>
+    <td><a href="{{ url_for('partner_edit', id=p.id) }}" class="btn btn-outline btn-sm">Edit</a></td></tr>{% endfor %}
+</tbody></table></div>{{ pagination(page, total_pages, 'partner_list') }}
+{% else %}<div class="empty-state"><p>No partners found.</p><a href="{{ url_for('partner_add') }}" class="btn btn-primary">+ Add First Partner</a></div>{% endif %}
+{% endblock %}

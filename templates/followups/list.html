@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% from "macros.html" import pagination %}
+{% block title %}Follow-ups{% endblock %}{% block page_title %}Follow-up Records{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><p style="color:var(--text-muted);">Impact tracking</p><a href="{{ url_for('followup_add') }}" class="btn btn-primary">+ Add Follow-up</a></div>
+{% if records %}<div class="table-wrap"><table><thead><tr><th>Beneficiary</th><th>Date</th><th>Type</th><th>Satisfaction</th><th>Device OK?</th><th>Usage</th><th>Actions</th></tr></thead><tbody>
+{% for r in records %}<tr><td><a href="{{ url_for('beneficiary_detail', id=r.beneficiary_id) }}" style="color:var(--primary)">{{ r.beneficiary_name }}</a></td><td>{{ r.followup_date or '-' }}</td><td>{{ r.followup_type }}</td><td>{{ r.satisfaction_rating }}/10</td><td>{% if r.device_working %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-danger">No</span>{% endif %}</td><td>{{ r.usage_frequency }}</td><td><a href="{{ url_for('followup_edit', id=r.id) }}" class="btn btn-outline btn-sm">Edit</a></td></tr>{% endfor %}
+</tbody></table></div>{{ pagination(page, total_pages, 'followup_list') }}
+{% else %}<div class="empty-state"><p>No follow-ups yet.</p><a href="{{ url_for('followup_add') }}" class="btn btn-primary">+ Add First</a></div>{% endif %}{% endblock %}

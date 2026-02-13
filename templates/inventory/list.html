@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Inventory{% endblock %}{% block page_title %}Inventory{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;"><p style="color:var(--text-muted);">Device stock tracking</p><a href="{{ url_for('inventory_add') }}" class="btn btn-primary">+ Add Procurement</a></div>
+<div class="card"><div class="card-header">Stock Summary</div><div class="table-wrap"><table><thead><tr><th>Device Type</th><th style="text-align:right">Unit Cost</th><th style="text-align:right">In Stock</th><th style="text-align:right">Distributed</th></tr></thead><tbody>
+{% for s in stock_summary %}<tr><td>{{ s.name }}</td><td style="text-align:right">&#8377;{{ fmt_inr(s.unit_cost) }}</td><td style="text-align:right"><strong>{{ s.total_stock }}</strong></td><td style="text-align:right">{{ s.distributed }}</td></tr>{% endfor %}
+</tbody></table></div></div>
+<div class="section"><h3 class="section-title">Procurement Batches</h3>
+{% if batches %}<div class="table-wrap"><table><thead><tr><th>Device</th><th>Batch #</th><th>Vendor</th><th>Date</th><th style="text-align:right">Qty</th><th style="text-align:right">Total Cost</th></tr></thead><tbody>
+{% for b in batches %}<tr><td>{{ b.device_name }}</td><td>{{ b.batch_number or '-' }}</td><td>{{ b.vendor or '-' }}</td><td>{{ b.procurement_date or '-' }}</td><td style="text-align:right">{{ b.quantity }}</td><td style="text-align:right">&#8377;{{ fmt_inr(b.total_cost) }}</td></tr>{% endfor %}
+</tbody></table></div>{% else %}<p style="color:var(--text-muted);padding:12px 0;">No batches yet.</p>{% endif %}</div>{% endblock %}

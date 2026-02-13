@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card"><div class="stat-value">{{ stats.beneficiaries }}</div><div class="stat-label">Beneficiaries</div></div>
+    <div class="stat-card"><div class="stat-value">{{ stats.distributions }}</div><div class="stat-label">Devices Distributed</div></div>
+    <div class="stat-card"><div class="stat-value">{{ stats.partners }}</div><div class="stat-label">Partners</div></div>
+    <div class="stat-card"><div class="stat-value">{{ stats.events }}</div><div class="stat-label">Events</div></div>
+    <div class="stat-card"><div class="stat-value">{{ stats.trainings }}</div><div class="stat-label">Trainings</div></div>
+    <div class="stat-card"><div class="stat-value">{{ stats.followups }}</div><div class="stat-label">Follow-ups</div></div>
+    <div class="stat-card"><div class="stat-value">&#8377;{{ fmt_inr(stats.total_value) }}</div><div class="stat-label">Device Value</div></div>
+    <div class="stat-card"><div class="stat-value">&#8377;{{ fmt_inr(stats.budget_spent) }}</div><div class="stat-label">Budget Spent</div></div>
+</div>
+<div class="grid-2">
+    <div class="card"><div class="card-header">2026 Milestones</div>
+    {% for m in milestones %}
+    <div style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+            <span>{{ m.name }}</span><span><strong>{{ m.current_value }}</strong> / {{ m.target_value }} {{ m.unit }}</span></div>
+        {% set pct = (m.current_value / m.target_value * 100) if m.target_value > 0 else 0 %}
+        <div class="progress-bar"><div class="progress-fill" style="width:{{ [pct,100]|min }}%;background:{% if pct >= 100 %}var(--success){% elif pct >= 50 %}var(--primary){% elif pct >= 25 %}var(--accent){% else %}var(--danger){% endif %};"></div><div class="progress-text">{{ "%.0f"|format(pct) }}%</div></div>
+    </div>{% endfor %}
+    <a href="{{ url_for('milestone_list') }}" class="btn btn-outline btn-sm" style="margin-top:8px;">View All</a></div>
+    <div>
+        <div class="card"><div class="card-header">Devices Distributed</div>
+        {% if device_breakdown %}<div class="table-wrap"><table><thead><tr><th>Device</th><th style="text-align:right">Count</th></tr></thead><tbody>
+        {% for d in device_breakdown %}<tr><td>{{ d.name }}</td><td style="text-align:right"><strong>{{ d.count }}</strong></td></tr>{% endfor %}
+        </tbody></table></div>{% else %}<p style="color:var(--text-muted);padding:12px 0;">No distributions yet.</p>{% endif %}</div>
+        <div class="card"><div class="card-header">Upcoming Events</div>
+        {% if upcoming_events %}{% for e in upcoming_events %}<div style="padding:8px 0;border-bottom:1px solid var(--border);"><strong><a href="{{ url_for('event_detail', id=e.id) }}" style="color:var(--primary);">{{ e.name }}</a></strong><div style="font-size:13px;color:var(--text-muted);">{{ e.event_date }} &middot; {{ e.city or '' }}{% if e.state %}, {{ e.state }}{% endif %}</div></div>{% endfor %}{% else %}<p style="color:var(--text-muted);padding:12px 0;">No upcoming events.</p>{% endif %}</div>
+    </div>
+</div>
+<div class="card" style="margin-top:16px;"><div class="card-header">Recent Activity</div>
+{% if recent_activity %}{% for a in recent_activity %}<div style="padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:14px;"><strong>{{ a.action }}</strong> {{ a.entity_type or '' }}{% if a.entity_name %} &mdash; {{ a.entity_name }}{% endif %}<span style="float:right;color:var(--text-muted);font-size:12px;">{{ a.created_at }}</span></div>{% endfor %}
+<a href="{{ url_for('activity_log') }}" class="btn btn-outline btn-sm" style="margin-top:12px;">View All</a>{% else %}<p style="color:var(--text-muted);padding:12px 0;">No activity yet.</p>{% endif %}</div>
+<div class="card" style="margin-top:16px;"><div class="card-header">Quick Actions</div><div class="btn-group" style="flex-wrap:wrap;">
+    <a href="{{ url_for('partner_add') }}" class="btn btn-primary btn-sm">+ Add Partner</a>
+    <a href="{{ url_for('beneficiary_add') }}" class="btn btn-primary btn-sm">+ Add Beneficiary</a>
+    <a href="{{ url_for('event_add') }}" class="btn btn-accent btn-sm">+ Create Event</a>
+    <a href="{{ url_for('distribution_add') }}" class="btn btn-accent btn-sm">+ Record Distribution</a>
+    <a href="{{ url_for('inventory_add') }}" class="btn btn-outline btn-sm">+ Add Inventory</a>
+    <a href="{{ url_for('reports_index') }}" class="btn btn-outline btn-sm">Reports</a></div></div>
+{% endblock %}

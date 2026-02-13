@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ b.name }}{% endblock %}{% block page_title %}{{ b.name }}{% endblock %}
+{% block content %}
+<div class="detail-header"><div><span class="badge badge-info">{{ b.vision_category }}</span> <span class="badge badge-primary">{{ b.employment_status }}</span></div>
+<div class="btn-group"><a href="{{ url_for('beneficiary_edit', id=b.id) }}" class="btn btn-outline btn-sm">Edit</a>
+<a href="{{ url_for('distribution_add') }}" class="btn btn-accent btn-sm">+ Distribution</a>
+<a href="{{ url_for('training_add') }}" class="btn btn-outline btn-sm">+ Training</a>
+<a href="{{ url_for('followup_add') }}" class="btn btn-outline btn-sm">+ Follow-up</a>
+<form method="post" action="{{ url_for('beneficiary_delete', id=b.id) }}" style="display:inline;" onsubmit="return confirm('Delete this beneficiary and all related records?')"><button type="submit" class="btn btn-danger btn-sm">Delete</button></form></div></div>
+<div class="card"><div class="detail-grid">
+    <div class="detail-item"><label>Age</label><p>{{ b.age or '-' }}</p></div>
+    <div class="detail-item"><label>Gender</label><p>{{ b.gender or '-' }}</p></div>
+    <div class="detail-item"><label>Visual Acuity</label><p>{{ b.visual_acuity or '-' }}</p></div>
+    <div class="detail-item"><label>Disability Cert</label><p>{{ b.disability_certificate or '-' }}</p></div>
+    <div class="detail-item"><label>Education</label><p>{{ b.education_qualification or '-' }}</p></div>
+    <div class="detail-item"><label>Class/Year</label><p>{{ b.class_or_year or '-' }}</p></div>
+    <div class="detail-item"><label>Phone</label><p>{{ b.phone or '-' }}</p></div>
+    <div class="detail-item"><label>Email</label><p>{{ b.email or '-' }}</p></div>
+    <div class="detail-item"><label>Aadhar No.</label><p>{{ b.aadhar_no or '-' }}</p></div>
+    <div class="detail-item"><label>Partner</label><p>{% if b.partner_name %}<a href="{{ url_for('partner_detail', id=b.partner_id) }}" style="color:var(--primary)">{{ b.partner_name }}</a>{% else %}-{% endif %}</p></div>
+    <div class="detail-item"><label>Location</label><p>{{ b.location or '' }} {{ b.city or '' }}{% if b.state %}, {{ b.state }}{% endif %}</p></div>
+    <div class="detail-item"><label>Smartphone</label><p>{{ b.smartphone_model or '-' }} {% if b.port_type %}({{ b.port_type }}){% endif %}</p></div>
+</div></div>
+<div class="section"><h3 class="section-title">Devices ({{ devices|length }})</h3>
+{% if devices %}<div class="table-wrap"><table><thead><tr><th>Device</th><th>Serial #</th><th>Date</th><th>Event</th><th>Value</th></tr></thead><tbody>
+{% for d in devices %}<tr><td>{{ d.device_name }}</td><td>{{ d.serial_number or '-' }}</td><td>{{ d.distribution_date or '-' }}</td><td>{% if d.event_name %}<a href="{{ url_for('event_detail', id=d.event_id) }}" style="color:var(--primary)">{{ d.event_name }}</a>{% else %}-{% endif %}</td><td>&#8377;{{ fmt_inr(d.unit_cost) }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p style="color:var(--text-muted);padding:12px 0;">No devices yet.</p>{% endif %}</div>
+<div class="section"><h3 class="section-title">Training ({{ trainings|length }})</h3>
+{% if trainings %}<div class="table-wrap"><table><thead><tr><th>Type</th><th>Device</th><th>Trainer</th><th>Date</th><th>Status</th></tr></thead><tbody>
+{% for t in trainings %}<tr><td>{{ t.training_type }}</td><td>{{ t.device_name or '-' }}</td><td>{{ t.trainer_name or '-' }}</td><td>{{ t.training_date or '-' }}</td><td><span class="badge {% if t.status == 'Completed' %}badge-success{% else %}badge-warning{% endif %}">{{ t.status }}</span></td></tr>{% endfor %}</tbody></table></div>{% else %}<p style="color:var(--text-muted);padding:12px 0;">No training records.</p>{% endif %}</div>
+<div class="section"><h3 class="section-title">Follow-ups ({{ followups|length }})</h3>
+{% if followups %}<div class="table-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Satisfaction</th><th>Device OK?</th><th>Usage</th></tr></thead><tbody>
+{% for f in followups %}<tr><td>{{ f.followup_date or '-' }}</td><td>{{ f.followup_type }}</td><td>{{ f.satisfaction_rating }}/10</td><td>{% if f.device_working %}<span class="badge badge-success">Yes</span>{% else %}<span class="badge badge-danger">No</span>{% endif %}</td><td>{{ f.usage_frequency }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p style="color:var(--text-muted);padding:12px 0;">No follow-ups.</p>{% endif %}</div>
+{% endblock %}
