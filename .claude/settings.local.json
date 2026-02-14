@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /b)",
+      "Bash(gh run list --limit 5)",
+      "Bash(gh run view 22006662921 --log)"
+    ]
+  }
+}

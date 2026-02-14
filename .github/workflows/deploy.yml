@@ -31,7 +31,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "app.py"
+          source: "app.py,config.py,database.py,report_generator.py,templates,static"
           target: "/home/ec2-user/"
 
       - name: Restart Flask app
